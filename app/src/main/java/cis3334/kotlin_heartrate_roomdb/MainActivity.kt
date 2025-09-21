@@ -11,6 +11,7 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
@@ -66,7 +67,7 @@ fun App(vm: MainViewModel) {
             InsertButton(onClick = vm::insert, enabled = enabled)
             ClearAllButton(onClick = vm::clearAll)
             SavedEntriesHeader()
-            HeartrateList(items = items)
+            HeartrateList(heartrates = items)
         }
     }
 }
@@ -118,15 +119,78 @@ fun SavedEntriesHeader() {
 }
 
 @Composable
-fun HeartrateList(items: List<Heartrate>) {
-    Column(
+fun HeartrateList(heartrates: List<Heartrate>) {
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
+    )
+    {
+        items(heartrates) { heartrate ->
+            HeartrateItem(heartrate = heartrate);
+        }
+//        for (item in items) {
+//            Text(text = "Pulse ${item.pulse}, Age ${item.age}")
+//        }
+    }
+}
+
+@Composable
+fun HeartrateItem(heartrate: Heartrate, modifier: Modifier = Modifier) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(6.dp)
     ) {
-        for (item in items) {
-            Text(text = "Pulse ${item.pulse}, Age ${item.age}")
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Heart icon
+            Icon(
+                imageVector = Icons.Filled.Favorite,
+                contentDescription = "Heartrate",
+                tint = when (heartrate.rangeIndex) {
+                    0 -> Color.Gray
+                    1 -> Color.Green
+                    2 -> Color.Blue
+                    3 -> Color.Yellow
+                    4 -> Color.Magenta
+                    else -> Color.Red
+                },
+                modifier = Modifier
+                    .size(40.dp)
+                    .padding(end = 16.dp)
+            )
+            Column(modifier = Modifier.weight(1f)) {
+
+                Text(
+                    text = "Pulse: ${heartrate.pulse}, Age: ${heartrate.age}",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+
+                // Display Cardio Level (Range Name)
+                Text(
+                    text = "Level: ${heartrate.rangeName()}",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+                // Display Percentage of Max Heart Rate
+                Text(
+                    text = "Max HR %: ${(heartrate.percentOfMax * 100).roundToInt()}%",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 }
